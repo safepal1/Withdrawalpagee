@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAFEPAL</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:system-ui, Arial;
+}
+
+/* BACKGROUND */
+body{
+    min-height:100vh;
+    overflow:hidden;
+    color:white;
+    background:
+        linear-gradient(rgba(0,0,0,0.78), rgba(0,0,0,0.78)),
+        url("IMG_1594.webp") center/cover no-repeat fixed;
+}
+
+/* CANVAS */
+canvas{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    pointer-events:none;
+    z-index:0;
+}
+
+/* LAYERS */
+#splash,#login,#app{
+    position:relative;
+    z-index:2;
+}
+
+/* SPLASH */
+#splash{
+    position:fixed;
+    inset:0;
+    background:#050814;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    z-index:10;
+}
+
+.logo{
+    font-size:28px;
+    font-weight:bold;
+    color:#00e6ff;
+}
+
+.loader{
+    width:120px;
+    height:5px;
+    background:#222;
+    margin-top:15px;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+.loader div{
+    width:40%;
+    height:100%;
+    background:linear-gradient(90deg,#00ff9d,#00c2ff);
+    animation:load 1s infinite;
+}
+
+@keyframes load{
+    0%{transform:translateX(-100%)}
+    100%{transform:translateX(250%)}
+}
+
+/* LOGIN */
+#login{
+    display:none;
+    height:100vh;
+    justify-content:center;
+    align-items:center;
+}
+
+.card{
+    width:340px;
+    padding:25px;
+    border-radius:18px;
+    background:rgba(255,255,255,0.08);
+    backdrop-filter: blur(18px);
+    text-align:center;
+}
+
+input,select{
+    width:90%;
+    padding:12px;
+    margin-top:12px;
+    border:none;
+    border-radius:10px;
+    text-align:center;
+    outline:none;
+}
+
+button{
+    width:90%;
+    padding:12px;
+    margin-top:12px;
+    border:none;
+    border-radius:10px;
+    background:linear-gradient(135deg,#2f80ff,#00c2ff);
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+/* APP */
+#app{
+    display:none;
+    padding:18px;
+}
+
+/* HEADER */
+.header{
+    background:rgba(255,255,255,0.06);
+    padding:18px;
+    border-radius:16px;
+    backdrop-filter: blur(10px);
+}
+
+.owner{font-size:14px;opacity:0.8;}
+.balance{font-size:36px;color:#00e6ff;margin-top:5px;}
+.pnl{font-size:14px;margin-top:8px;opacity:0.8;}
+
+/* MARKET */
+.market{margin-top:15px;}
+
+.coin{
+    display:flex;
+    justify-content:space-between;
+    padding:12px;
+    margin-top:10px;
+    background:rgba(255,255,255,0.05);
+    border-radius:12px;
+}
+
+/* ACTIONS */
+.actions{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+}
+
+.buy{
+    flex:1;
+    background:linear-gradient(135deg,#00ff9d,#00c2ff);
+    color:black;
+}
+
+.sell{
+    flex:1;
+    background:linear-gradient(135deg,#ff3b3b,#ff7b00);
+}
+
+/* CHART */
+canvas#chart{
+    width:100%;
+    height:140px;
+    margin-top:15px;
+    background:rgba(255,255,255,0.03);
+    border-radius:10px;
+}
+
+/* WITHDRAW PAGE */
+.withdrawPage{
+    position:fixed;
+    inset:0;
+    display:none;
+    justify-content:center;
+    align-items:center;
+    background:
+        linear-gradient(rgba(0,0,0,0.65), rgba(0,0,0,0.65)),
+        url("IMG_1594.webp") center/cover no-repeat;
+    z-index:999;
+}
+
+.withdrawCard{
+    width:340px;
+    padding:25px;
+    border-radius:18px;
+    background:rgba(255,255,255,0.08);
+    backdrop-filter:blur(18px);
+    text-align:center;
+}
+
+.withdrawCard input,
+.withdrawCard select{
+    width:100%;
+    padding:12px;
+    margin-top:8px;
+    border:none;
+    border-radius:10px;
+    text-align:center;
+}
+
+.confirmBtn{
+    width:100%;
+    margin-top:15px;
+    padding:12px;
+    background:linear-gradient(135deg,#00ff9d,#00c2ff);
+    border:none;
+    border-radius:10px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.closeBtn{
+    width:100%;
+    margin-top:10px;
+    padding:10px;
+    background:#ff3b3b;
+    border:none;
+    border-radius:10px;
+    color:white;
+}
+
+/* LOADING */
+.loadingScreen{
+    position:absolute;
+    inset:0;
+    background:
+        linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)),
+        url("IMG_1594.webp") center/cover no-repeat;
+    display:none;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+}
+
+.spinner{
+    width:70px;
+    height:70px;
+    border-radius:50%;
+    border:6px solid rgba(255,255,255,0.15);
+    border-top:6px solid #00c2ff;
+    animation:spin 1s linear infinite;
+    margin-bottom:15px;
+}
+
+@keyframes spin{
+    0%{transform:rotate(0deg)}
+    100%{transform:rotate(360deg)}
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="bg"></canvas>
+
+<!-- SPLASH -->
+<div id="splash">
+    <div class="logo">Safepal</div>
+    <div class="loader"><div></div></div>
+</div>
+
+<!-- LOGIN -->
+<div id="login">
+    <div class="card">
+        <h2>Secure Login</h2>
+        <input type="password" id="pin" placeholder="Enter PIN">
+        <button onclick="login()">Login</button>
+    </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+    <div class="header">
+        <div class="owner">Account Owner: Tawnia Glidewell</div>
+        <div style="color:#00ff9d;font-weight:bold;margin-top:5px;">
+            🎉 Congratulations Tawnia Glidewell
+        </div>
+        <div class="balance">$2,500,000.00</div>
+        <div class="pnl">P&L: +$120.00</div>
+    </div>
+
+    <canvas id="chart"></canvas>
+
+    <div class="market">
+        <div class="coin"><span>Bitcoin</span><span id="btc">$0</span></div>
+        <div class="coin"><span>Ethereum</span><span id="eth">$0</span></div>
+        <div class="coin"><span>Solana</span><span id="sol">$0</span></div>
+    </div>
+
+    <div class="actions">
+        <button class="buy" onclick="trade()">BUY</button>
+        <button class="sell" onclick="trade()">SELL</button>
+    </div>
+
+    <button onclick="openWithdraw()">Withdraw Funds</button>
+</div>
+
+<!-- WITHDRAW -->
+<div id="withdrawPage" class="withdrawPage">
+
+    <div class="withdrawCard">
+
+        <h2>Withdraw Crypto</h2>
+
+        <select>
+            <option>Bitcoin (BTC)</option>
+        </select>
+
+        <input id="walletInput" placeholder="Enter your wallet address">
+        <input id="amountInput" placeholder="Enter amount">
+
+        <button class="confirmBtn" onclick="startWithdraw()">
+            Confirm Withdrawal
+        </button>
+
+        <button class="closeBtn" onclick="closeWithdraw()">
+            Cancel
+        </button>
+
+    </div>
+
+    <div id="loadingScreen" class="loadingScreen">
+        <div class="spinner"></div>
+        <p id="loadingText">Processing...</p>
+    </div>
+
+</div>
+
+<script>
+
+/* SPLASH */
+setTimeout(()=>{
+    document.getElementById("splash").style.display="none";
+    document.getElementById("login").style.display="flex";
+},2000);
+
+/* LOGIN */
+function login(){
+    if(document.getElementById("pin").value==="3344"){
+        document.getElementById("login").style.display="none";
+        document.getElementById("app").style.display="block";
+    }else{
+        alert("Wrong PIN");
+    }
+}
+
+/* TRADE */
+function trade(){
+    alert("Trade simulated");
+}
+
+/* WITHDRAW */
+function openWithdraw(){
+    document.getElementById("withdrawPage").style.display="flex";
+    document.getElementById("loadingScreen").style.display="none";
+}
+
+function closeWithdraw(){
+    document.getElementById("withdrawPage").style.display="none";
+}
+
+function startWithdraw(){
+
+    const amount = document.getElementById("amountInput").value;
+    const loading = document.getElementById("loadingScreen");
+    const text = document.getElementById("loadingText");
+
+    if(!amount){
+        alert("Enter amount");
+        return;
+    }
+
+    loading.style.display="flex";
+
+    const steps = [
+        "Checking BTC wallet...",
+        "Validating transaction...",
+        "Connecting blockchain...",
+        "Broadcasting...",
+        "Finalizing..."
+    ];
+
+    let i=0;
+
+    let interval=setInterval(()=>{
+        text.innerText=steps[i];
+        i++;
+        if(i>=steps.length) i=0;
+    },1500);
+
+    setTimeout(()=>{
+        clearInterval(interval);
+        text.innerText="withdrawal completed✅";
+    },9000);
+}
+
+/* CHART */
+const c=document.getElementById("chart").getContext("2d");
+let data=Array.from({length:30},()=>Math.random()*100);
+
+function draw(){
+    c.clearRect(0,0,window.innerWidth,140);
+    c.beginPath();
+    c.strokeStyle="#00e6ff";
+
+    for(let i=0;i<data.length;i++){
+        let x=i*(window.innerWidth/30);
+        let y=140-data[i];
+
+        if(i===0)c.moveTo(x,y);
+        else c.lineTo(x,y);
+    }
+
+    c.stroke();
+
+    data.shift();
+    data.push(Math.random()*100);
+
+    requestAnimationFrame(draw);
+}
+draw();
+
+/* PARTICLES */
+const bg=document.getElementById("bg");
+const ctx=bg.getContext("2d");
+
+bg.width=window.innerWidth;
+bg.height=window.innerHeight;
+
+let particles=Array.from({length:60},()=>({
+x:Math.random()*bg.width,
+y:Math.random()*bg.height,
+r:Math.random()*2,
+d:Math.random()*1
+}));
+
+function animate(){
+ctx.clearRect(0,0,bg.width,bg.height);
+ctx.fillStyle="white";
+
+particles.forEach(p=>{
+ctx.beginPath();
+ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+ctx.fill();
+
+p.y+=p.d;
+if(p.y>bg.height){
+p.y=0;
+p.x=Math.random()*bg.width;
+}
+});
+
+requestAnimationFrame(animate);
+}
+animate();
+
+</script>
+
+</body>
+</html>
